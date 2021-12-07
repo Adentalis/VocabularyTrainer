@@ -2,13 +2,14 @@ import logo from './logo.svg';
 import { useEffect, useState } from 'react';
 import Papa from 'papaparse';
 import './App.css';
-import database from './data/test.txt';
-import csvtest from './data/username.csv';
-import { CSVLink, CSVDownload } from 'react-csv';
+import csvtest from './data/words.csv';
+import { CSVLink } from 'react-csv';
+import { DataGrid, GridRowsProp, GridColDef } from '@mui/x-data-grid';
 
 function App() {
-  const [rows, setRows] = useState([]);
+  const [words, setWords] = useState([]);
   const [count, setCount] = useState(0);
+  const [columns, setColumns] = useState(0);
 
   async function getData() {
     const response = await fetch(csvtest);
@@ -18,22 +19,51 @@ function App() {
     const csv = decoder.decode(result.value); // the csv text
     const results = Papa.parse(csv, { header: true }); // object with { data, errors, meta }
     const rows = results.data; // array of objects
-    setRows(rows);
+    console.log(rows);
+    setWords(rows);
   }
 
-  function addData() {
+  function addWord(german, english) {
+    let id = words.length;
+
+    //create a dd.mm-yyyy string
+    let date = new Date();
+    let day = date.getDate();
+    let month = date.getMonth();
+    month = month + 1;
+    if (String(day).length == 1) day = '0' + day;
+    if (String(month).length == 1) month = '0' + month;
+    let TODAY_DATE = day + '.' + month + '.' + date.getFullYear();
+
+    let wordEn = {
+      id: id.toString(),
+      german: german,
+      english: english,
+      language: 'en',
+      phase: '0',
+      nextgame: TODAY_DATE,
+      partnerid: (id + 1).toString(),
+    };
+    let wordDe = { id: id + 1, german: german, english: english, language: 'de', phase: '0', nextgame: TODAY_DATE, partnerid: id.toString() };
     let word = { Username: 'dfsdsd', Identifier: 'sdfsdf', Firstname: 'd', Lastname: 'ee' };
-    let d = rows;
-    d.push(word);
-    console.log(d);
-    console.log(rows.length);
-    setRows(d);
+
+    let newWords = JSON.parse(JSON.stringify(words));
+    newWords.push(wordEn);
+    newWords.push(wordDe);
+
+    console.log(newWords);
+    setWords(newWords);
   }
 
-  function test() {
-    console.log(rows.length);
-  }
-
+  const columnss = [
+    { field: 'id', headerName: 'ID', width: 80 },
+    { field: 'german', headerName: 'Deutsch', width: 150 },
+    { field: 'english', headerName: 'Englisch', width: 150 },
+    { field: 'language', headerName: 'Abfragesprache', width: 150 },
+    { field: 'phase', headerName: 'Phase', width: 80 },
+    { field: 'nextgame', headerName: 'Nächste Abfrage', width: 150 },
+    { field: 'partnerid', headerName: 'Partner ID', width: 100 },
+  ];
   return (
     <div className='App'>
       <header className='App-header'>
@@ -42,23 +72,20 @@ function App() {
           <p>You clicked {count} times</p>
           <button onClick={() => setCount(count + 1)}>Click me</button>
         </div>
-        <button onClick={() => getData()}>GET</button>
-
-        <p>ENGLISHHHH rows: {rows.length}</p>
-        <button onClick={() => addData()}>ADD</button>
-        <button onClick={() => test()}>TEST</button>
-
+        <p>ENGLISHHHH rows: {words.length}</p>
+        <button onClick={() => addWord('die Tasse', 'cup')}>ADD</button>
         <div>
-          <CSVLink data={rows} filename='data.csv' className='hidden' target='_blank' />
+          <CSVLink data={words} filename='data.csv' className='hidden' target='_blank' />
         </div>
-        <a href={`data:text/csv;charset=utf-8,${escape(rows)}`} download='filename.csv'>
-          download
-        </a>
-        <CSVLink data={rows} target='_blank' style={{ textDecoration: 'none', outline: 'none', height: '5vh' }}>
-          <button variant='contained' color='secondary' style={{ height: '100%' }}>
+        <CSVLink data={words} filename={'words.csv'} target='_blank' style={{ textDecoration: 'none', outline: 'none', height: '5vh' }}>
+          <button variant='contained' color='secondary' style={{ height: '60%' }}>
             Download CSV
           </button>
         </CSVLink>
+        <button onClick={() => getData()}>GET</button>
+        <div style={{ height: 300, width: '70%', backgroundColor: 'white' }}>
+          <DataGrid rows={words} columns={columnss} />
+        </div>{' '}
       </header>
     </div>
   );
