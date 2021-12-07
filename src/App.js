@@ -9,6 +9,8 @@ import { DataGrid, GridRowsProp, GridColDef } from '@mui/x-data-grid';
 function App() {
   const [words, setWords] = useState([]);
   const [count, setCount] = useState(0);
+  const [showTable, setShowTable] = useState(0);
+
   const [columns, setColumns] = useState(0);
 
   async function getData() {
@@ -67,25 +69,35 @@ function App() {
   return (
     <div className='App'>
       <header className='App-header'>
-        <img src={logo} className='App-logo' alt='logo' />
-        <div>
-          <p>You clicked {count} times</p>
-          <button onClick={() => setCount(count + 1)}>Click me</button>
+        <div className='main'>
+          <div>
+            <p>You clicked {count} times</p>
+            <button onClick={() => setCount(count + 1)}>Click me</button>
+          </div>
+          <p>ENGLISHHHH rows: {words.length}</p>
+          <button onClick={() => addWord('die Tasse', 'cup')}>ADD</button>
+          <div>
+            <CSVLink data={words} filename='data.csv' className='hidden' target='_blank' />
+          </div>
+          <CSVLink data={words} filename={'words.csv'} target='_blank' style={{ textDecoration: 'none', outline: 'none', height: '5vh' }}>
+            <button variant='contained' color='secondary' style={{ height: '60%' }}>
+              Download CSV
+            </button>
+          </CSVLink>
+          <button onClick={() => getData()}>GET</button>
+          {showTable ? (
+            <div style={{ height: '30vh', width: '100%', backgroundColor: 'white' }}>
+              <DataGrid rows={words} columns={columnss} />
+            </div>
+          ) : (
+            <p></p>
+          )}
         </div>
-        <p>ENGLISHHHH rows: {words.length}</p>
-        <button onClick={() => addWord('die Tasse', 'cup')}>ADD</button>
-        <div>
-          <CSVLink data={words} filename='data.csv' className='hidden' target='_blank' />
+        <div className='settings'>
+          <p>{showTable}</p>
+          <button onClick={() => setShowTable(!showTable)}>Tabelle</button>
+          <button>Speichern</button>
         </div>
-        <CSVLink data={words} filename={'words.csv'} target='_blank' style={{ textDecoration: 'none', outline: 'none', height: '5vh' }}>
-          <button variant='contained' color='secondary' style={{ height: '60%' }}>
-            Download CSV
-          </button>
-        </CSVLink>
-        <button onClick={() => getData()}>GET</button>
-        <div style={{ height: 300, width: '70%', backgroundColor: 'white' }}>
-          <DataGrid rows={words} columns={columnss} />
-        </div>{' '}
       </header>
     </div>
   );
