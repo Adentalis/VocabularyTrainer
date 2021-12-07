@@ -1,3 +1,5 @@
 ﻿"id","german","english","language","phase","nextgame","partnerid"
-"0","das Buch","book","en","0","07.12.2021","1"
-"1","das Buch","book","de","0","07.12.2021","0"
+"0","das Buch","book","en","1","07.12.2021","1"
+"1","das Buch","book","de","6","07.12.2021","0"
+"2","die Tasse","cup","en","6","08.12.2021","3"
+"3","die Tasse","cup","de","1","07.12.2021","2"
