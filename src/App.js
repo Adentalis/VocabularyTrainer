@@ -17,13 +17,8 @@ function App() {
   const [loose, setLoose] = useState(0);
 
   const [wordCounter, setWordCounter] = useState(0);
-  const [inPhase0, setInPhase0] = useState(0);
-  const [inPhase1, setInPhase1] = useState(0);
-  const [inPhase2, setInPhase2] = useState(0);
-  const [inPhase3, setInPhase3] = useState(0);
-  const [inPhase4, setInPhase4] = useState(0);
-  const [inPhase5, setInPhase5] = useState(0);
-  const [inPhase6, setInPhase6] = useState(0);
+  const [inPhase, setInPhase] = useState([]);
+
   const [showTable, setShowTable] = useState(false);
   const [showNewWord, setShowNewWord] = useState(false);
 
@@ -63,13 +58,7 @@ function App() {
   function updateGame(dummyWords) {
     const { phases, playableWords } = calculateStats(dummyWords);
 
-    setInPhase0(phases[0]);
-    setInPhase1(phases[1]);
-    setInPhase2(phases[2]);
-    setInPhase3(phases[3]);
-    setInPhase4(phases[4]);
-    setInPhase5(phases[5]);
-    setInPhase6(phases[6]);
+    setInPhase(phases);
 
     setWordsToPlay(playableWords);
   }
@@ -111,13 +100,13 @@ function App() {
     return (
       <div className='stats'>
         <p>Amount of words: {wordCounter}</p>
-        <p>In Phase 0: {inPhase0}</p>
-        <p>In Phase 1: {inPhase1}</p>
-        <p>In Phase 2: {inPhase2}</p>
-        <p>In Phase 3: {inPhase3}</p>
-        <p>In Phase 4: {inPhase4}</p>
-        <p>In Phase 5: {inPhase5}</p>
-        <p>In Phase 6: {inPhase6}</p>
+        <p>In Phase 0: {inPhase[0]}</p>
+        <p>In Phase 1: {inPhase[1]}</p>
+        <p>In Phase 2: {inPhase[2]}</p>
+        <p>In Phase 3: {inPhase[3]}</p>
+        <p>In Phase 4: {inPhase[4]}</p>
+        <p>In Phase 5: {inPhase[5]}</p>
+        <p>In Phase 6: {inPhase[6]}</p>
         <p>Words to Play: {wordsToPlay.length}</p>
       </div>
     );
