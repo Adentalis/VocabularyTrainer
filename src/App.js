@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Papa from 'papaparse';
 import './App.css';
 import csvtest from './data/words.csv';
@@ -10,9 +10,12 @@ function App() {
   const [loaded, setLoaded] = useState(false);
   const [wordsToPlay, setWordsToPlay] = useState([]);
 
-  const [count, setCount] = useState(0);
+  const [nextWord, setNextWord] = useState('');
+  const [nextWordSolution, setNextWordSolution] = useState('');
+
   const [win, setWin] = useState(0);
   const [loose, setLoose] = useState(0);
+
   const [wordCounter, setWordCounter] = useState(0);
   const [inPhase0, setInPhase0] = useState(0);
   const [inPhase1, setInPhase1] = useState(0);
@@ -21,14 +24,14 @@ function App() {
   const [inPhase4, setInPhase4] = useState(0);
   const [inPhase5, setInPhase5] = useState(0);
   const [inPhase6, setInPhase6] = useState(0);
-
   const [showTable, setShowTable] = useState(false);
-
   const [showNewWord, setShowNewWord] = useState(false);
+
+  //add a new word
   const [german, setGerman] = useState('');
   const [english, setEnglish] = useState('');
 
-  const columnss = [
+  const columns = [
     { field: 'id', headerName: 'ID', width: 80 },
     { field: 'german', headerName: 'Deutsch', width: 150 },
     { field: 'english', headerName: 'Englisch', width: 150 },
@@ -37,6 +40,10 @@ function App() {
     { field: 'nextgame', headerName: 'Nächste Abfrage', width: 150 },
     { field: 'partnerid', headerName: 'Partner ID', width: 100 },
   ];
+
+  useEffect(() => {
+    //getData();
+  });
 
   async function getData() {
     const response = await fetch(csvtest);
@@ -52,10 +59,12 @@ function App() {
     // calculations for stats
     setWordCounter(rows.length);
     console.log(rows);
-
+    //updateGame();
+    //---- get all words to play today
     let phases = [0, 0, 0, 0, 0, 0, 0];
     let playableWords = [];
     let index = 0;
+    console.log(words.length);
     rows.forEach((e) => {
       //get all words to play now
 
@@ -105,7 +114,6 @@ function App() {
     setInPhase6(phases[6]);
 
     setWordsToPlay(playableWords);
-    //---- get all words to play today
   }
 
   function updateGame() {}
@@ -116,25 +124,24 @@ function App() {
     }
     let id = words.length;
 
-    //create a dd.mm-yyyy string
-    let date = new Date();
-    let day = date.getDate();
-    let month = date.getMonth();
-    month = month + 1;
-    if (String(day).length === 1) day = '0' + day;
-    if (String(month).length === 1) month = '0' + month;
-    let TODAY_DATE = day + '.' + month + '.' + date.getFullYear();
-
     let wordEn = {
       id: id.toString(),
       german: german,
       english: english,
       language: 'en',
       phase: '0',
-      nextgame: TODAY_DATE,
+      nextgame: createTimeForNextPhase(0),
       partnerid: (id + 1).toString(),
     };
-    let wordDe = { id: id + 1, german: german, english: english, language: 'de', phase: '0', nextgame: TODAY_DATE, partnerid: id.toString() };
+    let wordDe = {
+      id: id + 1,
+      german: german,
+      english: english,
+      language: 'de',
+      phase: '0',
+      nextgame: createTimeForNextPhase(0),
+      partnerid: id.toString(),
+    };
 
     let newWords = JSON.parse(JSON.stringify(words));
     newWords.push(wordEn);
@@ -142,6 +149,55 @@ function App() {
 
     console.log(newWords);
     setWords(newWords);
+  }
+
+  function showStatsInterface() {
+    return (
+      <div className='stats'>
+        <p>Amount of words: {wordCounter}</p>
+        <p>In Phase 0: {inPhase0}</p>
+        <p>In Phase 1: {inPhase1}</p>
+        <p>In Phase 2: {inPhase2}</p>
+        <p>In Phase 3: {inPhase3}</p>
+        <p>In Phase 4: {inPhase4}</p>
+        <p>In Phase 5: {inPhase5}</p>
+        <p>In Phase 6: {inPhase6}</p>
+        <p>Words to Play: {wordsToPlay.length}</p>
+      </div>
+    );
+  }
+
+  function showNewWordInterface() {
+    return (
+      <div className='new-word'>
+        <p>Deutsch:</p>
+        <input onChange={(e) => setGerman(e.target.value)} style={{ marginLeft: '2vh' }}></input>
+        <p style={{ marginLeft: '10vh' }}>English:</p>
+        <input onChange={(e) => setEnglish(e.target.value)} style={{ marginLeft: '2vh' }}></input>
+        <button onClick={() => saveNewWord()}>Hinzufügen</button>
+      </div>
+    );
+  }
+
+  function showSettingsInterface() {
+    return (
+      <div className='settings'>
+        <button onClick={() => getData()}>Spiel starten</button>
+        <button onClick={() => setShowTable(!showTable)}>Tabelle</button>
+        <button
+          onClick={() => {
+            setEnglish('');
+            setGerman('');
+            setShowNewWord(!showNewWord);
+          }}
+        >
+          Neues Wort
+        </button>
+        <CSVLink data={words} filename={'words.csv'} target='_blank'>
+          <button style={{ height: '170%', width: '20vh' }}>Speichern</button>
+        </CSVLink>{' '}
+      </div>
+    );
   }
 
   return (
@@ -153,57 +209,33 @@ function App() {
         <div className='main'>
           {showTable ? (
             <div style={{ height: '60vh', width: '100%', backgroundColor: 'white' }}>
-              <DataGrid rows={words} columns={columnss} />
+              <DataGrid rows={words} columns={columns} />
             </div>
           ) : (
             <div>
-              <p>You clicked {count} times</p>
-              <button onClick={() => setCount(count + 1)}>Click me</button>
+              {loaded ? (
+                <div>
+                  <p>Choosen Word: {nextWord}</p>
+                  <input></input>
+                  <p>Solutions: {nextWordSolution}</p>
+                  <button style={{ height: '5vh', width: '50%', backgroundColor: 'green' }} onClick={() => saveNewWord()}>
+                    Correct
+                  </button>
+                  <button style={{ height: '5vh', width: '50%', backgroundColor: 'red' }} onClick={() => saveNewWord()}>
+                    False
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <p>Welcome, please start :)</p>
+                </div>
+              )}
             </div>
           )}
         </div>
-        <div className='settings'>
-          <button onClick={() => getData()}>Spiel starten</button>
-          <button onClick={() => setShowTable(!showTable)}>Tabelle</button>
-          <button
-            onClick={() => {
-              setEnglish('');
-              setGerman('');
-              setShowNewWord(!showNewWord);
-            }}
-          >
-            Neues Wort
-          </button>
-          <CSVLink data={words} filename={'words.csv'} target='_blank'>
-            <button style={{ height: '170%', width: '20vh' }}>Speichern</button>
-          </CSVLink>{' '}
-        </div>
-        {loaded ? (
-          <div className='stats'>
-            <p>Amount of words: {wordCounter}</p>
-            <p>In Phase 0: {inPhase0}</p>
-            <p>In Phase 1: {inPhase1}</p>
-            <p>In Phase 2: {inPhase2}</p>
-            <p>In Phase 3: {inPhase3}</p>
-            <p>In Phase 4: {inPhase4}</p>
-            <p>In Phase 5: {inPhase5}</p>
-            <p>In Phase 6: {inPhase6}</p>
-            <p>Words to Play: {wordsToPlay.length}</p>
-          </div>
-        ) : (
-          <p></p>
-        )}
-        {showNewWord ? (
-          <div className='new-word'>
-            <p>Deutsch:</p>
-            <input onChange={(e) => setGerman(e.target.value)} style={{ marginLeft: '2vh' }}></input>
-            <p style={{ marginLeft: '10vh' }}>English:</p>
-            <input onChange={(e) => setEnglish(e.target.value)} style={{ marginLeft: '2vh' }}></input>
-            <button onClick={() => saveNewWord()}>Hinzufügen</button>
-          </div>
-        ) : (
-          <p></p>
-        )}
+        {showSettingsInterface()}
+        {loaded ? showStatsInterface() : <p></p>}
+        {showNewWord ? showNewWordInterface() : <p></p>}
       </header>
     </div>
   );
@@ -211,19 +243,57 @@ function App() {
 
 export default App;
 
-/*
-  function getDatabase() {
-    fetch(database)
-      .then((r) => r.text())
-      .then((text) => {
-        let bytes = [];
-        for (var i = 0; i < text.length; ++i) {
-          var code = text.charCodeAt(i);
-          bytes = bytes.concat([code]);
-        }
-        console.log('bytes', bytes.join(', '));
-        console.log('text decoded:', text);
-      });
+//create a dd.mm-yyyy string
+function createTimeForNextPhase(phase) {
+  let days = 0;
+
+  if (phase === 0) {
+    days += 0;
   }
+  if (phase === 1) {
+    days += 1;
+  }
+  if (phase === 2) {
+    days += 3;
+  }
+  if (phase === 3) {
+    days += 7;
+  }
+  if (phase === 4) {
+    days += 15;
+  }
+  if (phase === 5) {
+    days += 30;
+  }
+  if (phase === 6) {
+    days += 90;
+  }
+
+  let now = new Date();
+  let targetTime = new Date(now.getTime() + 86400000 * days);
+
+  let day = targetTime.getDate();
+  let month = targetTime.getMonth();
+  month = month + 1;
+  if (String(day).length === 1) day = '0' + day;
+  if (String(month).length === 1) month = '0' + month;
+  let result = day + '.' + month + '.' + targetTime.getFullYear();
+  return result;
+}
+
+/*
+phase 0: +0  -- 01.01
+phase 1: +1  -- 02.01
+phase 2: +3  -- 05.01
+phase 3: +7  -- 12.01
+phase 4: +15 -- 27.01
+phase 5: +30 -- 27.02
+phase 6: +90 -- 27.05
+--> ~ 5 months
+*/
+
+/*
+TODOs
+- when added new word, update state
 
 */
