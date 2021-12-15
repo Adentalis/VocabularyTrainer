@@ -42,8 +42,8 @@ function App() {
   ];
 
   useEffect(() => {
-    //getData();
-  });
+    getData();
+  }, []);
 
   async function getData() {
     const response = await fetch(csvtest);
