@@ -58,22 +58,23 @@ function App() {
 
     // calculations for stats
     setWordCounter(rows.length);
-    console.log(rows);
-    //updateGame();
+    // console.log(rows);
+    updateGame(rows);
+  }
+
+  function updateGame(dummyWords) {
     //---- get all words to play today
     let phases = [0, 0, 0, 0, 0, 0, 0];
     let playableWords = [];
     let index = 0;
-    console.log(words.length);
-    rows.forEach((e) => {
-      //get all words to play now
 
-      const [day, month, year] = rows[index++].nextgame.split('.');
-      console.log(day, month, year);
+    //get all words to play now
+    dummyWords.forEach((e) => {
+      const [day, month, year] = dummyWords[index++].nextgame.split('.');
+      // console.log(day, month, year);
       let date = new Date(year, month - 1, day);
       let now = new Date();
       if (now - date > 0) {
-        //console.log(now - date);
         playableWords.push(e);
       }
       // count phases
@@ -116,8 +117,6 @@ function App() {
     setWordsToPlay(playableWords);
   }
 
-  function updateGame() {}
-
   function saveNewWord() {
     if (german === '' || english === '') {
       return;
@@ -147,8 +146,9 @@ function App() {
     newWords.push(wordEn);
     newWords.push(wordDe);
 
-    console.log(newWords);
+    // console.log(newWords);
     setWords(newWords);
+    updateGame(newWords);
   }
 
   function showStatsInterface() {
@@ -182,7 +182,6 @@ function App() {
   function showSettingsInterface() {
     return (
       <div className='settings'>
-        <button onClick={() => getData()}>Spiel starten</button>
         <button onClick={() => setShowTable(!showTable)}>Tabelle</button>
         <button
           onClick={() => {
@@ -293,7 +292,12 @@ phase 6: +90 -- 27.05
 */
 
 /*
-TODOs
-- when added new word, update state
+language en means the SOLUTION must be in en
+language de means the SOLUTION must be in de
 
 */
+
+/**
+ *
+ *
+ */
