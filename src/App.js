@@ -56,56 +56,13 @@ function App() {
     setWords(rows);
     setLoaded(true);
 
-    // calculations for stats
     setWordCounter(rows.length);
-    // console.log(rows);
     updateGame(rows);
   }
 
   function updateGame(dummyWords) {
-    //---- get all words to play today
-    let phases = [0, 0, 0, 0, 0, 0, 0];
-    let playableWords = [];
-    let index = 0;
+    const { phases, playableWords } = calculateStats(dummyWords);
 
-    //get all words to play now
-    dummyWords.forEach((e) => {
-      const [day, month, year] = dummyWords[index++].nextgame.split('.');
-      // console.log(day, month, year);
-      let date = new Date(year, month - 1, day);
-      let now = new Date();
-      if (now - date > 0) {
-        playableWords.push(e);
-      }
-      // count phases
-      let phase = e.phase;
-      switch (parseInt(phase)) {
-        case 0:
-          phases[0]++;
-          break;
-        case 1:
-          phases[1]++;
-          break;
-        case 2:
-          phases[2]++;
-          break;
-        case 3:
-          phases[3]++;
-          break;
-        case 4:
-          phases[4]++;
-          break;
-        case 5:
-          phases[5]++;
-          break;
-        case 6:
-          phases[6]++;
-          break;
-        default:
-          console.log('ERROR --- PHASE OF ONE WORD IS NOT BETWEEN 0-6 --> phase:' + phase);
-          break;
-      }
-    });
     setInPhase0(phases[0]);
     setInPhase1(phases[1]);
     setInPhase2(phases[2]);
@@ -146,7 +103,6 @@ function App() {
     newWords.push(wordEn);
     newWords.push(wordDe);
 
-    // console.log(newWords);
     setWords(newWords);
     updateGame(newWords);
   }
@@ -242,7 +198,7 @@ function App() {
 
 export default App;
 
-//create a dd.mm-yyyy string
+// create a dd.mm-yyyy string
 function createTimeForNextPhase(phase) {
   let days = 0;
 
@@ -278,6 +234,52 @@ function createTimeForNextPhase(phase) {
   if (String(month).length === 1) month = '0' + month;
   let result = day + '.' + month + '.' + targetTime.getFullYear();
   return result;
+}
+
+// return phases and playableWords
+function calculateStats(dummyWords) {
+  let phases = [0, 0, 0, 0, 0, 0, 0];
+  let playableWords = [];
+  let index = 0;
+  dummyWords.forEach((e) => {
+    const [day, month, year] = dummyWords[index++].nextgame.split('.');
+    let date = new Date(year, month - 1, day);
+    let now = new Date();
+    if (now - date > 0) {
+      playableWords.push(e);
+    }
+    let phase = e.phase;
+    switch (parseInt(phase)) {
+      case 0:
+        phases[0]++;
+        break;
+      case 1:
+        phases[1]++;
+        break;
+      case 2:
+        phases[2]++;
+        break;
+      case 3:
+        phases[3]++;
+        break;
+      case 4:
+        phases[4]++;
+        break;
+      case 5:
+        phases[5]++;
+        break;
+      case 6:
+        phases[6]++;
+        break;
+      default:
+        console.log('ERROR --- PHASE OF ONE WORD IS NOT BETWEEN 0-6 --> phase:' + phase);
+        break;
+    }
+  });
+  return {
+    phases: phases,
+    playableWords: playableWords,
+  };
 }
 
 /*
