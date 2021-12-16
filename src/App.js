@@ -8,10 +8,13 @@ import { DataGrid } from '@mui/x-data-grid';
 function App() {
   const [words, setWords] = useState([]);
   const [loaded, setLoaded] = useState(false);
+  const [started, setStarted] = useState(false);
+
   const [wordsToPlay, setWordsToPlay] = useState([]);
 
-  const [nextWord, setNextWord] = useState('');
-  const [nextWordSolution, setNextWordSolution] = useState('');
+  const [currentWord, setCurrentWord] = useState({});
+  const [showSolution, setShowSolution] = useState(false);
+  const [inputSolution, setInputSolution] = useState('');
 
   const [win, setWin] = useState(0);
   const [loose, setLoose] = useState(0);
@@ -56,14 +59,56 @@ function App() {
   }
 
   function updateGame(dummyWords) {
+    setWordCounter(dummyWords.length);
+
     const { phases, playableWords } = calculateStats(dummyWords);
 
     setInPhase(phases);
 
     setWordsToPlay(playableWords);
+
+    if (playableWords.length === 0) {
+      setCurrentWord(null);
+    } else {
+      let randomIndex = Math.floor(Math.random() * playableWords.length);
+      let choosenWord = playableWords[randomIndex];
+
+      if (choosenWord.language === 'en') {
+        setCurrentWord({
+          id: choosenWord.id,
+          question: choosenWord.german,
+          solution: choosenWord.english,
+        });
+      } else {
+        setCurrentWord({
+          id: choosenWord.id,
+          question: choosenWord.english,
+          solution: choosenWord.german,
+        });
+      }
+    }
   }
 
-  function saveNewWord() {
+  function checkAnswer(correctAnswer) {
+    let dummyWords = words;
+    if (correctAnswer === true) {
+      setWin(win + 1);
+      let currentPhaseOfWord = parseInt(dummyWords[currentWord.id].phase);
+      dummyWords[currentWord.id].phase = currentPhaseOfWord + 1;
+      console.log('In win:  ' + dummyWords[currentWord.id].phase);
+      dummyWords[currentWord.id].nextgame = createTimeForNextPhase(currentPhaseOfWord + 1);
+    } else {
+      setLoose(loose + 1);
+      dummyWords[currentWord.id].phase = 0;
+      dummyWords[currentWord.id].nextgame = createTimeForNextPhase(0);
+    }
+    setWords(dummyWords);
+    updateGame(dummyWords);
+    setShowSolution(false);
+    setInputSolution('');
+  }
+
+  function addNewWord() {
     if (german === '' || english === '') {
       return;
     }
@@ -107,7 +152,12 @@ function App() {
         <p>In Phase 4: {inPhase[4]}</p>
         <p>In Phase 5: {inPhase[5]}</p>
         <p>In Phase 6: {inPhase[6]}</p>
+        <p>Completed: {inPhase[7]}</p>
+
         <p>Words to Play: {wordsToPlay.length}</p>
+        <p>-----------</p>
+        <p>Correct: {win}</p>
+        <p>Wrong: {loose}</p>
       </div>
     );
   }
@@ -119,7 +169,7 @@ function App() {
         <input onChange={(e) => setGerman(e.target.value)} style={{ marginLeft: '2vh' }}></input>
         <p style={{ marginLeft: '10vh' }}>English:</p>
         <input onChange={(e) => setEnglish(e.target.value)} style={{ marginLeft: '2vh' }}></input>
-        <button onClick={() => saveNewWord()}>Hinzufügen</button>
+        <button onClick={() => addNewWord()}>Hinzufügen</button>
       </div>
     );
   }
@@ -148,7 +198,7 @@ function App() {
     <div className='App'>
       <header className='App-header'>
         <div className='header'>
-          <p>Phase 6</p>
+          <p>Phase 7 :)</p>
         </div>
         <div className='main'>
           {showTable ? (
@@ -157,21 +207,38 @@ function App() {
             </div>
           ) : (
             <div>
-              {loaded ? (
+              {started ? (
                 <div>
-                  <p>Choosen Word: {nextWord}</p>
-                  <input></input>
-                  <p>Solutions: {nextWordSolution}</p>
-                  <button style={{ height: '5vh', width: '50%', backgroundColor: 'green' }} onClick={() => saveNewWord()}>
-                    Correct
-                  </button>
-                  <button style={{ height: '5vh', width: '50%', backgroundColor: 'red' }} onClick={() => saveNewWord()}>
-                    False
-                  </button>
+                  {currentWord ? (
+                    <div>
+                      <p>{currentWord.question}</p>
+                      <input id='answer' onChange={(e) => setInputSolution(e.target.value)} value={inputSolution}></input>
+                      <button onClick={() => setShowSolution(true)}>Solution</button>
+
+                      {showSolution ? <p> {currentWord.solution}</p> : <p>-----</p>}
+
+                      <button style={{ height: '5vh', width: '50%', backgroundColor: 'green' }} onClick={() => checkAnswer(true)}>
+                        Correct
+                      </button>
+                      <button style={{ height: '5vh', width: '50%', backgroundColor: 'red' }} onClick={() => checkAnswer(false)}>
+                        False
+                      </button>
+                    </div>
+                  ) : (
+                    <p>No more words today</p>
+                  )}
                 </div>
               ) : (
                 <div>
-                  <p>Welcome, please start :)</p>
+                  <button
+                    id='start-button'
+                    onClick={() => {
+                      setStarted(true);
+                      updateGame(words);
+                    }}
+                  >
+                    Start
+                  </button>
                 </div>
               )}
             </div>
@@ -227,17 +294,18 @@ function createTimeForNextPhase(phase) {
 
 // return phases and playableWords
 function calculateStats(dummyWords) {
-  let phases = [0, 0, 0, 0, 0, 0, 0];
+  let phases = [0, 0, 0, 0, 0, 0, 0, 0];
   let playableWords = [];
   let index = 0;
   dummyWords.forEach((e) => {
     const [day, month, year] = dummyWords[index++].nextgame.split('.');
     let date = new Date(year, month - 1, day);
     let now = new Date();
-    if (now - date > 0) {
+    if (now - date > 0 && parseInt(e.phase) !== 7) {
       playableWords.push(e);
     }
     let phase = e.phase;
+    console.log('Phase: ', phase);
     switch (parseInt(phase)) {
       case 0:
         phases[0]++;
@@ -260,8 +328,11 @@ function calculateStats(dummyWords) {
       case 6:
         phases[6]++;
         break;
+      case 7:
+        phases[7]++;
+        break;
       default:
-        console.log('ERROR --- PHASE OF ONE WORD IS NOT BETWEEN 0-6 --> phase:' + phase);
+        console.log('ERROR --- PHASE OF ONE WORD IS NOT BETWEEN 0-7 --> phase:' + phase);
         break;
     }
   });
@@ -279,6 +350,7 @@ phase 3: +7  -- 12.01
 phase 4: +15 -- 27.01
 phase 5: +30 -- 27.02
 phase 6: +90 -- 27.05
+phase 7: Word learned!
 --> ~ 5 months
 */
 
