@@ -360,7 +360,9 @@ language de means the SOLUTION must be in de
 
 */
 
-/**
- *
- *
+/** TODOs
+ * https://www.linguee.de/englisch-deutsch/uebersetzung/house.html add direct link to linguee
+ * show solution word in red/green depending on correct word added or not
+ * say correct/false with keyboard so no mouse must be used
+ * after word added epty the input value
  */
