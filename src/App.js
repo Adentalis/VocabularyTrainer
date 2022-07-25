@@ -19,6 +19,7 @@ function App() {
 
   const [win, setWin] = useState(0);
   const [loose, setLoose] = useState(0);
+  const [link, setLink] = useState("");
 
   const [wordCounter, setWordCounter] = useState(0);
   const [inPhase, setInPhase] = useState([]);
@@ -54,8 +55,6 @@ function App() {
     const rows = results.data; // array of objects
     setWords(rows);
     setLoaded(true);
-
-    setWordCounter(rows.length);
     updateGame(rows);
   }
 
@@ -73,6 +72,20 @@ function App() {
     } else {
       let randomIndex = Math.floor(Math.random() * playableWords.length);
       let choosenWord = playableWords[randomIndex];
+
+      //let a = getLink(choosenWord);
+      let splittedWord = choosenWord.english.split(" ");
+      if (splittedWord.length === 1) {
+        setLink(
+          "https://de.pons.com/%C3%BCbersetzung/englisch-deutsch/" +
+            choosenWord.english
+        );
+      } else {
+        setLink(
+          "https://de.pons.com/%C3%BCbersetzung/englisch-deutsch/" +
+            splittedWord[1]
+        );
+      }
 
       if (choosenWord.language === "en") {
         setCurrentWord({
@@ -234,12 +247,25 @@ function App() {
                     <button onClick={() => setShowSolution(true)}>
                       Solution
                     </button>
-
-                    {showSolution ? (
-                      <p> {currentWord.solution}</p>
-                    ) : (
-                      <p>-----</p>
-                    )}
+                    <div className="solution">
+                      {showSolution ? (
+                        <div>
+                          <p> {currentWord.solution}</p>
+                          <a
+                            className="solution-link"
+                            href={link}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Link To Pons
+                          </a>
+                        </div>
+                      ) : (
+                        <div>
+                          <p>-----</p>
+                        </div>
+                      )}
+                    </div>
 
                     <button
                       style={{
